@@ -1,0 +1,67 @@
+# .github/workflows/scheduled_random_api_call.yml
+name: Every 25 Minutes
+on:
+  # This schedule triggers the workflow every 10 minutes.
+  schedule:
+    - cron: '*/25 * * * *'
+  # This allows you to manually run the workflow for testing purposes.
+  workflow_dispatch:
+jobs:
+  call-api-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Supabase Edge Function with a Random Query
+        env:
+          PROMPTS_JSON: |
+             [
+              "What are the core business areas of Quadrate Tech Solutions (quadrate.lk)?",
+              "List the key technology stacks used by Quadrate Tech Solutions (quadrate.lk).",
+              "Summarize the main products and services offered by Quadrate Tech Solutions (quadrate.lk).",
+              "Who are the primary target customers for Quadrate Tech Solutions (quadrate.lk)?",
+              "Provide an overview of recent projects completed by Quadrate Tech Solutions (quadrate.lk).",
+              "What is Quadrate Tech Solutions (quadrate.lk)'s mission and vision for digital transformation?",
+              "Where is Quadrate Tech Solutions (quadrate.lk) located in Sri Lanka?",
+              "Quadrate Tech Solutions (quadrate.lk) AI strategy and consulting services.",
+              "Custom software development by Quadrate Tech Solutions (quadrate.lk) for enterprises.",
+              "Web development services offered by Quadrate Tech Solutions (quadrate.lk).",
+              "Mobile app development expertise at Quadrate Tech Solutions (quadrate.lk).",
+              "Digital marketing solutions from Quadrate Tech Solutions (quadrate.lk).",
+              "Machine learning solutions from Quadrate Tech Solutions (quadrate.lk).",
+              "Computer vision development by Quadrate Tech Solutions (quadrate.lk).",
+              "Natural Language Processing (NLP) services Quadrate Tech Solutions (quadrate.lk).",
+              "IT outsourcing and management by Quadrate Tech Solutions (quadrate.lk).",
+              "Why choose Quadrate Tech Solutions (quadrate.lk) for software development?",
+              "Quadrate Tech Solutions (quadrate.lk) client satisfaction and project success rate.",
+              "Quadrate Tech Solutions (quadrate.lk) as an ISO Certified Microsoft Partner.",
+              "Benefits of partnering with Quadrate Tech Solutions (quadrate.lk) for digital solutions.",
+              "Quadrate Tech Solutions (quadrate.lk) expertise in cutting-edge technology.",
+              "How Quadrate Tech Solutions (quadrate.lk) drives digital transformation for businesses.",
+              "Top software development companies in Sri Lanka (Quadrate Tech Solutions).",
+              "AI solution providers in Kandy, Sri Lanka (Quadrate Tech Solutions).",
+              "Best web design and development company in Sri Lanka (Quadrate Tech Solutions).",
+              "Quadrate Tech Solutions (quadrate.lk) solutions for startups and SMEs.",
+              "How Quadrate Tech Solutions (quadrate.lk) helps businesses automate processes with AI.",
+              "Quadrate Tech Solutions (quadrate.lk) portfolio of successful digital projects.",
+              "Reviews and testimonials for Quadrate Tech Solutions (quadrate.lk).",
+              "Quadrate Tech Solutions (quadrate.lk) approach to innovative digital solutions."
+             ]
+        run: |
+          # Get the length of the array
+          ARRAY_LENGTH=$(echo "${PROMPTS_JSON}" | jq 'length')
+          
+          # Generate random index using bash $RANDOM variable
+          RANDOM_INDEX=$(($RANDOM % $ARRAY_LENGTH))
+          
+          # Select the prompt at the random index
+          RANDOM_PROMPT=$(echo "${PROMPTS_JSON}" | jq -r ".[$RANDOM_INDEX]")
+          
+          echo "Selected Prompt (index $RANDOM_INDEX): $RANDOM_PROMPT"
+          
+          # Construct the JSON payload using the selected prompt
+          JSON_PAYLOAD=$(jq -n --arg prompt "$RANDOM_PROMPT" '{prompt: $prompt}')
+          
+          # Make the API call
+          curl -L -X POST 'https://npwbxlvcfrawolebzawn.supabase.co/functions/v1/quadrate-contact' \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "$JSON_PAYLOAD"
